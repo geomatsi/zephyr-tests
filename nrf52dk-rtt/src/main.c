@@ -36,19 +36,22 @@
 
 void main(void)
 {
-        printk("Hello World! %s\n", CONFIG_BOARD);
-
 	const struct device *dev;
 	bool led_is_on = true;
+	uint32_t c = 0;
 	int ret;
+
+        printk("Hello World! %s\n", CONFIG_BOARD);
 
 	dev = device_get_binding(LED0);
 	if (dev == NULL) {
+		printk("failed to bind LED0\n");
 		return;
 	}
 
 	ret = gpio_pin_configure(dev, PIN0, GPIO_OUTPUT_ACTIVE | FLAGS0);
 	if (ret < 0) {
+		printk("failed to configure LED0\n");
 		return;
 	}
 
@@ -56,5 +59,6 @@ void main(void)
 		gpio_pin_set(dev, PIN0, (int)led_is_on);
 		led_is_on = !led_is_on;
 		k_msleep(SLEEP_TIME_MS);
+		printk("blink %u\n", c++);
 	}
 }
