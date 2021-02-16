@@ -14,51 +14,84 @@
 
 #define SLEEP_TIME_MS   100
 
-#define LED_NODE0 DT_NODELABEL(led0)
-#define LED_NODE1 DT_NODELABEL(led1)
-#define LED_NODE2 DT_NODELABEL(led2)
-#define LED_NODE3 DT_NODELABEL(led3)
+struct led_desc {
+	const struct device *led;
+	char *name;
+	char *label;
+	gpio_pin_t pin;
+	gpio_flags_t flags;
+	bool ready;
+};
 
-#define LED0	DT_GPIO_LABEL(LED_NODE0, gpios)
-#define LED1	DT_GPIO_LABEL(LED_NODE1, gpios)
-#define LED2	DT_GPIO_LABEL(LED_NODE2, gpios)
-#define LED3	DT_GPIO_LABEL(LED_NODE3, gpios)
-
-#define PIN0	DT_GPIO_PIN(LED_NODE0, gpios)
-#define PIN1	DT_GPIO_PIN(LED_NODE1, gpios)
-#define PIN2	DT_GPIO_PIN(LED_NODE2, gpios)
-#define PIN3	DT_GPIO_PIN(LED_NODE3, gpios)
-
-#define FLAGS0	DT_GPIO_FLAGS(LED_NODE0, gpios)
-#define FLAGS1	DT_GPIO_FLAGS(LED_NODE1, gpios)
-#define FLAGS2	DT_GPIO_FLAGS(LED_NODE2, gpios)
-#define FLAGS3	DT_GPIO_FLAGS(LED_NODE3, gpios)
+struct led_desc leds_list[] = {
+	/* LED0 */
+	{
+		.name	= "led0",
+		.label	= DT_GPIO_LABEL(DT_NODELABEL(led0), gpios),
+		.pin	= DT_GPIO_PIN(DT_NODELABEL(led0), gpios),
+		.flags	= DT_GPIO_FLAGS(DT_NODELABEL(led0), gpios),
+		.ready	= false,
+	},
+	/* LED1 */
+	{
+		.name	= "led1",
+		.label	= DT_GPIO_LABEL(DT_NODELABEL(led1), gpios),
+		.pin	= DT_GPIO_PIN(DT_NODELABEL(led1), gpios),
+		.flags	= DT_GPIO_FLAGS(DT_NODELABEL(led1), gpios),
+		.ready	= false,
+	},
+	/* LED2 */
+	{
+		.name	= "led2",
+		.label	= DT_GPIO_LABEL(DT_NODELABEL(led2), gpios),
+		.pin	= DT_GPIO_PIN(DT_NODELABEL(led2), gpios),
+		.flags	= DT_GPIO_FLAGS(DT_NODELABEL(led2), gpios),
+		.ready	= false,
+	},
+	/* LED3 */
+	{
+		.name	= "led3",
+		.label	= DT_GPIO_LABEL(DT_NODELABEL(led3), gpios),
+		.pin	= DT_GPIO_PIN(DT_NODELABEL(led3), gpios),
+		.flags	= DT_GPIO_FLAGS(DT_NODELABEL(led3), gpios),
+		.ready	= false,
+	},
+};
 
 void main(void)
 {
-	const struct device *dev;
-	bool led_is_on = true;
-	uint32_t c = 0;
+	uint32_t cycle = 0;
+	struct led_desc *p;
 	int ret;
+	int i;
 
-        printk("Hello World! %s\n", CONFIG_BOARD);
+        printk("Hello World! %s\r\n", CONFIG_BOARD);
 
-	dev = device_get_binding(LED0);
-	if (dev == NULL) {
-		printk("failed to bind LED0\n");
-		return;
-	}
+	for (i = 0; i < ARRAY_SIZE(leds_list); i++) {
+		p = &leds_list[i];
+		p->led = device_get_binding(p->label);
+		if (!p->led) {
+			printk("failed to bind %s\r\n", p->name);
+			continue;
+		}
 
-	ret = gpio_pin_configure(dev, PIN0, GPIO_OUTPUT_ACTIVE | FLAGS0);
-	if (ret < 0) {
-		printk("failed to configure LED0\n");
-		return;
+		ret = gpio_pin_configure(p->led, p->pin, p->flags | GPIO_OUTPUT_ACTIVE);
+		if (ret) {
+			printk("failed to configure %s\r\n", p->name);
+			continue;
+		}
+
+		gpio_pin_set(p->led, p->pin, 0);
+		p->ready = true;
 	}
 
 	while (1) {
-		gpio_pin_set(dev, PIN0, (int)led_is_on);
-		led_is_on = !led_is_on;
+		p = &leds_list[cycle % ARRAY_SIZE(leds_list)];
+
+		if (p->ready)
+			gpio_pin_toggle(p->led, p->pin);
+
+		printk("cycle %u: %s\r\n", cycle++, p->name);
 		k_msleep(SLEEP_TIME_MS);
-		printk("blink %u\n", c++);
 	}
 }
