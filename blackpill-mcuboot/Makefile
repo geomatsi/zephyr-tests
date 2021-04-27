@@ -12,7 +12,7 @@ firmware: application bootloader
 
 application: dir
 	ZEPHYR_BASE=${ZEPHYR_BASE}/zephyr west build -p auto  -b blackpill
-	ZEPHYR_BASE=${ZEPHYR_BASE}/zephyr west sign -t imgtool -p ${ZEPHYR_BASE}/bootloader/mcuboot/scripts/imgtool.py -- --version ${MAJOR}+${MINOR}
+	ZEPHYR_BASE=${ZEPHYR_BASE}/zephyr west sign -t imgtool -p ${ZEPHYR_BASE}/bootloader/mcuboot/scripts/imgtool.py -- --version ${MAJOR}+${MINOR} --key ${ZEPHYR_BASE}/bootloader/mcuboot/root-rsa-2048.pem
 	cp build/zephyr/zephyr.signed.bin output/app.bin
 	cp build/zephyr/zephyr.signed.hex output/app.hex
 

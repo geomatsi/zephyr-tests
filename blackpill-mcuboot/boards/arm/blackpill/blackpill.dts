@@ -50,13 +50,13 @@
 
 		boot_partition: partition@0 {
 			label = "mcuboot";
-			reg = <0x00000000 0x00008000>;
+			reg = <0x00000000 0x00020000>;
 			read-only;
 		};
 
-		slot0_partition: partition@8000 {
+		slot0_partition: partition@20000 {
 			label = "image-0";
-			reg = <0x0008000 0x00058000>;
+			reg = <0x00020000 0x00040000>;
 		};
 
 		scratch_partition: partition@60000 {
