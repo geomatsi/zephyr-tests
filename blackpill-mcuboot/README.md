@@ -1,5 +1,7 @@
 # Blackpill Zephyr firmware and MCUBoot bootloader
 
+Note: minimal supported Zephyr version is v2.5.0
+
 ## Build firmware
 
 This section provides a brief overview of steps required to build MCUBoot bootloader and Zephyr application Blackpill board. It is assumed that Zephyr source tree is located at /path/to/zephyr/project/root.
@@ -21,7 +23,7 @@ $ ls -la build/zephyr/zephyr.signed.*
 Build MCUBoot bootloader:
 
 ```bash
-$ ZEPHYR_BASE=/path/to/zephyr/project/root/zephyr west build -d build_mcuboot -s /path/to/zephyr/project/root/bootloader/mcuboot/boot/zephyr -- -DBOARD=blackpill -DBOARD_ROOT=/path/to/firmware -DCONF_FILE=/path/to/firmware/mcuboot/prj.conf
+$ ZEPHYR_BASE=/path/to/zephyr/project/root/zephyr west build -d build_mcuboot -b blackpill_f401ce -s /path/to/zephyr/project/root/bootloader/mcuboot/boot/zephyr -- -DCONF_FILE=${PWD}/mcuboot/prj.conf -DDTC_OVERLAY_FILE=${PWD}/boards/blackpill_f401ce.overlay
 ```
 
 ### Generate factory image
@@ -37,7 +39,7 @@ $ python3 /path/to/zephyr/project/root/zephyr/scripts/mergehex.py -o output/firm
 Write factory image to flash using OpenOCD/JLink:
 
 ```bash
-$ ZEPHYR_BASE=/path/to/zephyr/project/root/zephyr west flash --hex-file output/firmware.hex
+$ ZEPHYR_BASE=/path/to/zephyr/project/root/zephyr west flash --hex-file output/firmware.hex --runner openocd --config support/openocd.cfg
 ```
 
 ## Using Makefile
