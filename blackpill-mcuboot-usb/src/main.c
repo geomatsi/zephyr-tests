@@ -12,6 +12,8 @@
 #include <devicetree.h>
 #include <drivers/gpio.h>
 
+#include <dfu/mcuboot.h>
+
 #define SLEEP_TIME_US 500000
 
 #define LED_NODE DT_NODELABEL(user_led)
@@ -30,7 +32,16 @@ static struct gpio_callback button_cb_data;
 void button_pressed(const struct device *dev, struct gpio_callback *cb,
 		    uint32_t pins)
 {
-	printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+	if (boot_is_img_confirmed()) {
+		printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+		return;
+	}
+
+	printk("Confirm new firmware image...\n");
+
+	if (boot_write_img_confirmed()) {
+		printk("Failed to confirm new firmware image...\n");
+	}
 }
 
 void main(void)
