@@ -1,0 +1,24 @@
+[tasks.app]
+dependencies = ["bin"]
+script = [
+'''
+ ${ZEPHYR_BASE}/bootloader/mcuboot/scripts/imgtool.py sign \
+	--align 1 \
+	--header-size 0x200 \
+	--slot-size 0x40000 \
+	--pad-header \
+	--version 0.0.1+1 \
+	--key ${ZEPHYR_BASE}/bootloader/mcuboot/root-rsa-2048.pem \
+	${CARGO_MAKE_BINARY_EXECUTABLE_NAME}.bin  ${CARGO_MAKE_BINARY_EXECUTABLE_NAME}.signed.bin
+'''
+]
+
+[tasks.bin]
+script = [
+'''
+cargo objcopy \
+	--release \
+	--bin ${CARGO_MAKE_BINARY_EXECUTABLE_NAME} \
+	-- -O binary ${CARGO_MAKE_BINARY_EXECUTABLE_NAME}.bin
+'''
+]
